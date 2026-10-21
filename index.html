@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indiana Veterans' Home — Interactive Check-In & AI Receptionist Demo | Sparks Digital LLC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy-900: #0c2340;
+      --navy-800: #16365f;
+      --navy-700: #1e4b82;
+      --gold-500: #d99b26;
+      --gold-100: #fef6e4;
+      --green-600: #15803d;
+      --green-500: #16a34a;
+      --green-100: #dcfce7;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-400: #94a3b8;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #e2e8f0;
+      color: var(--slate-900);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 18px;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    body.dark-mode {
+      background: #060911;
+      color: #f8fafc;
+    }
+
+    .app-shell {
+      max-width: 1440px;
+      width: 100%;
+      height: 100%;
+      margin: 0 auto;
+      background: var(--slate-50);
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.22);
+      padding: 14px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      transition: all 0.25s ease;
+    }
+
+    body.dark-mode .app-shell {
+      background: #0b1120;
+      border-color: #1e293b;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+    }
+
+    /* Top Header */
+    .slide-header {
+      background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 100%);
+      color: var(--white);
+      border-radius: 13px;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3.5px solid var(--gold-500);
+      flex-shrink: 0;
+    }
+
+    body.dark-mode .slide-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border-bottom-color: #38bdf8;
+    }
+
+    .brand-left { display: flex; align-items: center; gap: 14px; }
+
+    .seal-badge {
+      width: 44px; height: 44px;
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 2px solid var(--gold-500);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    body.dark-mode .seal-badge { border-color: #38bdf8; }
+
+    .brand-titles h1 {
+      font-size: 17px; font-weight: 800; letter-spacing: -0.01em; color: var(--white); line-height: 1.18;
+    }
+    .brand-titles .line-2 {
+      font-size: 13.5px; color: #f8fafc; margin-top: 2px; font-weight: 600;
+    }
+    .brand-titles .line-3 {
+      font-size: 12px; color: #cbd5e1; margin-top: 1px; font-weight: 500;
+    }
+
+    .header-controls { display: flex; align-items: center; gap: 12px; }
+
+    .demo-title-badge {
+      background: var(--gold-100);
+      color: #78350f;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1.5px solid #f59e0b;
+    }
+
+    .theme-toggle-switch {
+      display: flex; align-items: center;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1.5px solid rgba(255, 255, 255, 0.28);
+      border-radius: 999px;
+      padding: 3px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .theme-opt {
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #cbd5e1;
+      transition: all 0.2s ease;
+    }
+
+    .theme-opt.active-light {
+      background: #ffffff; color: #0f172a; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .theme-opt.active-dark {
+      background: #38bdf8; color: #090d16; box-shadow: 0 2px 6px rgba(56, 189, 248, 0.35);
+    }
+
+    /* 6-Tab Navigation Bar */
+    .demo-nav-bar {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-top: 9px;
+      flex-shrink: 0;
+    }
+
+    .demo-tab {
+      background: var(--white);
+      border: 1.5px solid var(--slate-200);
+      border-radius: 9px;
+      padding: 8px 6px;
+      text-align: center;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--slate-700);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+
+    .demo-tab:hover {
+      border-color: var(--navy-700);
+      transform: translateY(-1px);
+    }
+
+    .demo-tab.active {
+      background: var(--navy-800);
+      border-color: var(--navy-900);
+      color: var(--white);
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(12, 35, 64, 0.22);
+    }
+
+    .demo-tab.ai-tab {
+      border-color: #f59e0b;
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .demo-tab.ai-tab.active {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      border-color: #f59e0b;
+      color: #ffffff;
+    }
+
+    body.dark-mode .demo-tab {
+      background: #111827; border-color: #334155; color: #cbd5e1;
+    }
+    body.dark-mode .demo-tab.active {
+      background: #0f2942; border-color: #38bdf8; color: #ffffff;
+    }
+    body.dark-mode .demo-tab.ai-tab {
+      background: #271705; border-color: #f59e0b; color: #fcd34d;
+    }
+    body.dark-mode .demo-tab.ai-tab.active {
+      background: #d97706; color: #ffffff;
+    }
+
+    /* Main Workspace Container */
+    .workspace-area {
+      flex: 1;
+      display: flex;
+      gap: 16px;
+      margin: 10px 0;
+      min-height: 0;
+      align-items: stretch;
+    }
+
+    .view-panel {
+      display: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    .view-panel.active {
+      display: flex;
+      gap: 16px;
+    }
+
+    /* Device Frame Bezels */
+    .device-frame {
+      flex: 1.52;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.25s ease;
+    }
+
+    .device-frame.bezel-tablet {
+      background: #1e293b; border-radius: 22px; padding: 11px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+    }
+    .device-frame.bezel-pc {
+      background: #0f172a; border-radius: 12px; padding: 7px;
+      border: 2.5px solid #475569; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.2);
+    }
+    .device-frame.bezel-browser {
+      background: #cbd5e1; border-radius: 12px; padding: 5px;
+      border: 2px solid #64748b; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.15);
+    }
+    .device-frame.bezel-mobile {
+      background: #0f172a; border-radius: 26px; padding: 11px 16px;
+      border: 3.5px solid #334155; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
+    }
+
+    .app-screen {
+      background: var(--white);
+      border-radius: 11px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--slate-200);
+    }
+
+    body.dark-mode .app-screen,
+    body.dark-mode .side-card,
+    body.dark-mode .roster-card,
+    body.dark-mode .ai-panel,
+    body.dark-mode .slide-footer {
+      background: #111827;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+
+    .device-topbar {
+      background: var(--navy-900);
+      color: var(--white);
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .browser-bar {
+      background: #e2e8f0;
+      color: var(--slate-900);
+      padding: 7px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #cbd5e1;
+    }
+    body.dark-mode .browser-bar {
+      background: #1e293b; border-bottom-color: #334155; color: #f8fafc;
+    }
+    .browser-dots { display: flex; gap: 5px; }
+    .browser-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .browser-url {
+      flex: 1; background: var(--white); border: 1px solid #94a3b8;
+      border-radius: 6px; padding: 4px 12px; font-size: 11.5px; font-weight: 600; color: var(--navy-800);
+    }
+    body.dark-mode .browser-url {
+      background: #0f172a; border-color: #475569; color: #38bdf8;
+    }
+
+    .status-dot {
+      display: inline-block; width: 8px; height: 8px;
+      background: #4ade80; border-radius: 50%; margin-right: 6px;
+    }
+
+    .app-body {
+      padding: 12px 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Returning Visitor Express Lookup */
+    .returning-search-section {
+      background: #eff6ff;
+      border: 1.5px solid #93c5fd;
+      border-radius: 10px;
+      padding: 8px 13px;
+      position: relative;
+    }
+    body.dark-mode .returning-search-section {
+      background: #0f2942; border-color: #38bdf8;
+    }
+
+    .returning-search-label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; font-weight: 800; color: var(--navy-800);
+      text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px;
+    }
+    body.dark-mode .returning-search-label { color: #e0f2fe; }
+
+    .returning-combobox-slot {
+      width: 100%; height: 34px;
+      background: var(--white);
+      border: 1.5px solid var(--navy-700);
+      border-radius: 7px;
+      padding: 2px 5px 2px 10px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    body.dark-mode .returning-combobox-slot {
+      background: #0f172a; border-color: #38bdf8;
+    }
+
+    .returning-combobox-slot input {
+      border: none; outline: none; background: transparent;
+      flex: 1; font-size: 12.5px; font-weight: 600; color: inherit; font-family: inherit;
+    }
+
+    .modern-dd-btn {
+      background: linear-gradient(135deg, var(--navy-800) 0%, var(--navy-700) 100%);
+      color: var(--white);
+      font-size: 11px; font-weight: 800;
+      padding: 5px 12px; border-radius: 5px; border: none;
+      cursor: pointer; white-space: nowrap;
+    }
+    body.dark-mode .modern-dd-btn {
+      background: #38bdf8; color: #090d16;
+    }
+
+    /* Floating Returning Visitor Dropdown Menu */
+    .modern-dd-menu {
+      position: absolute; top: 68px; left: 0; right: 0;
+      background: var(--white);
+      border: 2px solid var(--navy-700);
+      border-radius: 12px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.32);
+      z-index: 40;
+      overflow: hidden;
+      display: none;
+    }
+    .modern-dd-menu.open { display: block; }
+    body.dark-mode .modern-dd-menu {
+      background: #111827; border-color: #38bdf8;
+    }
+
+    .modern-dd-head {
+      background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 100%);
+      color: var(--white); padding: 7px 14px; font-size: 10.5px; font-weight: 800;
+      text-transform: uppercase; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .modern-dd-row {
+      padding: 8px 13px; border-bottom: 1px solid var(--slate-200);
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .modern-dd-row:hover { background: #eff6ff; }
+    body.dark-mode .modern-dd-row { border-bottom-color: #1e293b; }
+    body.dark-mode .modern-dd-row:hover { background: #0f2942; }
+
+    .modern-dd-left { display: flex; align-items: center; gap: 10px; }
+    .modern-dd-avatar {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--navy-800);
+      color: var(--white); font-size: 10.5px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modern-dd-info strong { display: block; font-size: 12px; font-weight: 800; }
+    .modern-dd-info span { display: block; font-size: 10.5px; color: var(--slate-600); font-weight: 600; }
+    body.dark-mode .modern-dd-info span { color: #cbd5e1; }
+
+    .modern-dd-autofill {
+      background: #f1f5f9; color: var(--navy-800); border: 1px solid var(--slate-200);
+      font-size: 10.5px; font-weight: 700; padding: 4px 10px; border-radius: 6px;
+    }
+    body.dark-mode .modern-dd-autofill {
+      background: #1e293b; color: #38bdf8; border-color: #334155;
+    }
+
+    /* Step 1 Categories */
+    .step-label {
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--navy-700); margin-bottom: 5px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    body.dark-mode .step-label { color: #38bdf8; }
+    .step-label span.click-hint { font-size: 10.5px; color: var(--green-600); text-transform: none; font-weight: 700; }
+    body.dark-mode .step-label span.click-hint { color: #4ade80; }
+
+    .big-role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+
+    .big-role-btn {
+      border: 2px solid var(--slate-200); background: var(--slate-50);
+      border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; gap: 9px;
+      cursor: pointer; transition: all 0.15s ease; user-select: none;
+    }
+    .big-role-btn:hover { border-color: var(--navy-700); }
+    .big-role-btn.active {
+      border-color: var(--navy-700); background: #eff6ff;
+      box-shadow: 0 3px 10px rgba(30, 75, 130, 0.12);
+    }
+    body.dark-mode .big-role-btn { background: #1e293b; border-color: #334155; }
+    body.dark-mode .big-role-btn.active { background: #0f2942; border-color: #38bdf8; }
+
+    .role-icon-circle {
+      width: 34px; height: 34px; border-radius: 8px; background: var(--white);
+      border: 1.5px solid var(--slate-200); display: flex; align-items: center; justify-content: center;
+      color: var(--navy-800); flex-shrink: 0;
+    }
+    .big-role-btn.active .role-icon-circle {
+      background: var(--navy-800); color: var(--white); border-color: var(--navy-800);
+    }
+    body.dark-mode .role-icon-circle { background: #0f172a; border-color: #475569; color: #38bdf8; }
+    body.dark-mode .big-role-btn.active .role-icon-circle { background: #38bdf8; color: #090d16; border-color: #38bdf8; }
+
+    .role-text strong { display: block; font-size: 13px; font-weight: 800; }
+    .role-text span { display: block; font-size: 10.5px; color: var(--slate-600); font-weight: 500; }
+    body.dark-mode .role-text span { color: #cbd5e1; }
+
+    /* Step 2 Form Fields */
+    .simple-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+    .field-box label {
+      display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-700); margin-bottom: 3px;
+    }
+    body.dark-mode .field-box label { color: #cbd5e1; }
+
+    .field-input {
+      width: 100%; height: 34px; padding: 5px 10px;
+      font-size: 13px; font-weight: 600; color: var(--slate-900);
+      background: #f8fafc; border: 1.5px solid var(--navy-700);
+      border-radius: 7px; font-family: inherit; outline: none;
+    }
+    .field-input:focus {
+      border-color: var(--green-600); box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+    }
+    body.dark-mode .field-input {
+      background: #0f172a; border-color: #38bdf8; color: #f8fafc;
+    }
+
+    /* Action Buttons */
+    .action-btn-row { display: grid; grid-template-columns: 1.75fr 1fr; gap: 10px; }
+
+    .giant-print-btn {
+      width: 100%; background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+      color: var(--white); border: none; border-radius: 10px; padding: 11px 16px;
+      font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; box-shadow: 0 4px 12px rgba(21, 128, 61, 0.25); font-family: inherit;
+      transition: transform 0.15s ease;
+    }
+    .giant-print-btn:hover { transform: translateY(-1px); }
+
+    .quick-signout-big-btn {
+      width: 100%; background: var(--slate-100); color: var(--navy-900);
+      border: 2px solid var(--slate-400); border-radius: 10px; padding: 11px 14px;
+      font-size: 13.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px;
+      cursor: pointer; font-family: inherit;
+    }
+    body.dark-mode .quick-signout-big-btn {
+      background: #1e293b; border-color: #475569; color: #f8fafc;
+    }
+
+    .kiosk-helper-strip {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 6px; margin-top: 6px; border-top: 1px solid var(--slate-200);
+      font-size: 11px; color: var(--slate-600); font-weight: 600;
+    }
+    body.dark-mode .kiosk-helper-strip { border-top-color: #334155; color: #cbd5e1; }
+
+    /* Right Column Cards */
+    .right-column {
+      flex: 1.0; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+    }
+
+    .side-card {
+      background: var(--white); border-radius: 12px; border: 1.5px solid var(--slate-200);
+      padding: 11px 15px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); cursor: pointer;
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    .side-card:hover { border-color: var(--navy-700); transform: translateY(-1px); }
+
+    .side-card-title {
+      font-size: 11.5px; font-weight: 800; color: var(--navy-900);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 7px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    body.dark-mode .side-card-title { color: #f8fafc; }
+
+    .side-card-title span.tag {
+      background: #eff6ff; color: var(--navy-800); border: 1px solid #93c5fd;
+      padding: 3px 9px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: none;
+    }
+    body.dark-mode .side-card-title span.tag {
+      background: rgba(56, 189, 248, 0.14); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .qr-poster-box {
+      display: flex; align-items: center; gap: 12px;
+      background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+      border: 2px solid var(--navy-700); border-radius: 10px; padding: 8px 12px;
+    }
+    body.dark-mode .qr-poster-box {
+      background: linear-gradient(135deg, #0f172a 0%, #0f2942 100%); border-color: #38bdf8;
+    }
+    .qr-code-frame {
+      width: 66px; height: 66px; background: var(--white); border: 2px solid var(--slate-900);
+      border-radius: 8px; padding: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .qr-poster-text h4 { font-size: 12.5px; font-weight: 800; margin-bottom: 2px; }
+    .qr-poster-text p { font-size: 11px; color: var(--slate-700); line-height: 1.3; font-weight: 500; }
+    body.dark-mode .qr-poster-text p { color: #cbd5e1; }
+    .qr-sub-pill {
+      display: inline-block; margin-top: 4px; background: var(--navy-900); color: var(--white);
+      font-size: 9.8px; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+    }
+    body.dark-mode .qr-sub-pill { background: #38bdf8; color: #090d16; }
+
+    /* Live Sticker Badge */
+    .sticker-badge {
+      background: #ffffff; color: #0f172a; border: 2px solid #0f172a;
+      border-radius: 10px; overflow: hidden;
+    }
+    .sticker-top {
+      background: var(--navy-900); color: var(--white); padding: 5px 12px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .sticker-top strong { font-size: 10.5px; letter-spacing: 0.04em; }
+    .sticker-top span {
+      background: var(--gold-500); color: #0f172a; font-weight: 800;
+      font-size: 9.5px; padding: 2px 6px; border-radius: 4px;
+    }
+    .sticker-body {
+      padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    }
+    .sticker-role {
+      font-size: 10px; font-weight: 800; color: var(--navy-700); text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .sticker-name { font-size: 16px; font-weight: 800; color: #0f172a; margin: 2px 0; }
+    .sticker-details { font-size: 11px; color: #334155; line-height: 1.32; font-weight: 600; }
+    .sticker-qr-mini {
+      text-align: center; flex-shrink: 0; border-left: 1.5px dashed #cbd5e1; padding-left: 10px;
+    }
+    .sticker-qr-mini span { display: block; font-size: 8.5px; font-weight: 800; color: #475569; margin-top: 2px; }
+
+    .benefit-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .benefit-list li {
+      display: flex; align-items: flex-start; gap: 8px; font-size: 11.5px; line-height: 1.32; color: var(--slate-700); font-weight: 500;
+    }
+    body.dark-mode .benefit-list li { color: #cbd5e1; }
+    .check-circle {
+      width: 17px; height: 17px; border-radius: 50%; background: var(--green-100); color: var(--green-600);
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 10.5px; flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* TAB 5: LIVE ROSTER VIEW */
+    .roster-full-body {
+      flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; width: 100%;
+    }
+    .roster-card {
+      flex: 1; background: var(--white); border: 1.5px solid var(--slate-200);
+      border-radius: 14px; padding: 14px 18px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .dash-top-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .summary-cards { display: flex; gap: 8px; }
+    .stat-pill-card {
+      background: var(--slate-50); border: 1.5px solid var(--slate-200);
+      border-radius: 10px; padding: 6px 12px; display: flex; align-items: center; gap: 8px;
+    }
+    body.dark-mode .stat-pill-card { background: #1e293b; border-color: #334155; }
+    .stat-num { font-size: 18px; font-weight: 800; color: var(--navy-900); }
+    body.dark-mode .stat-num { color: #f8fafc; }
+    .stat-label { font-size: 10px; font-weight: 700; color: var(--slate-600); line-height: 1.15; }
+    body.dark-mode .stat-label { color: #cbd5e1; }
+
+    .dash-action-buttons { display: flex; gap: 6px; align-items: center; }
+    .btn-outline {
+      background: var(--white); border: 1.5px solid var(--navy-700); color: var(--navy-700);
+      padding: 6px 11px; border-radius: 7px; font-size: 11px; font-weight: 700; cursor: pointer;
+    }
+    body.dark-mode .btn-outline { background: #1e293b; border-color: #38bdf8; color: #38bdf8; }
+    .btn-ai-gold {
+      background: #fffbeb; border: 1.5px solid #d97706; color: #92400e;
+      padding: 6px 11px; border-radius: 7px; font-size: 11px; font-weight: 800; cursor: pointer;
+    }
+    .btn-emergency {
+      background: #dc2626; border: 1.5px solid #dc2626; color: var(--white);
+      padding: 6px 11px; border-radius: 7px; font-size: 11px; font-weight: 800; cursor: pointer;
+    }
+
+    .clean-table { width: 100%; border-collapse: collapse; }
+    .clean-table th {
+      text-align: left; padding: 8px 10px; background: var(--slate-100); color: var(--slate-700);
+      font-size: 11px; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid var(--slate-200);
+    }
+    body.dark-mode .clean-table th { background: #1e293b; color: #cbd5e1; border-bottom-color: #334155; }
+    .clean-table td {
+      padding: 9px 10px; border-bottom: 1px solid var(--slate-200); font-size: 12.5px; font-weight: 600;
+    }
+    body.dark-mode .clean-table td { border-bottom-color: #1e293b; }
+    .live-test-row td {
+      background: #f0fdf4; border-top: 2px dashed #16a34a; border-bottom: 2px dashed #16a34a;
+    }
+    body.dark-mode .live-test-row td { background: #0f2942; }
+
+    .role-badge {
+      display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 700;
+    }
+    .role-family { background: #dbeafe; color: #1e40af; }
+    .role-nurse { background: #f3e8ff; color: #6b21a8; }
+    .role-staff { background: #dcfce7; color: #166534; }
+    .role-vendor { background: #fef3c7; color: #92400e; }
+
+    .roster-action-group { display: flex; gap: 6px; }
+    .msg-call-btn {
+      background: #eff6ff; border: 1px solid #60a5fa; color: var(--navy-800);
+      padding: 4px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 800; cursor: pointer;
+    }
+    body.dark-mode .msg-call-btn { background: #0f2942; border-color: #38bdf8; color: #e0f2fe; }
+    .signout-btn {
+      background: var(--slate-100); border: 1px solid var(--slate-400); color: var(--slate-900);
+      padding: 4px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer;
+    }
+    body.dark-mode .signout-btn { background: #1e293b; border-color: #475569; color: #f8fafc; }
+
+    .customizable-banner {
+      background: linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%);
+      border: 2px solid #93c5fd; border-radius: 12px; padding: 11px 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px; cursor: pointer;
+    }
+    body.dark-mode .customizable-banner {
+      background: linear-gradient(90deg, #0f2942 0%, #111827 100%); border-color: #38bdf8;
+    }
+    .customizable-banner h3 { font-size: 14px; font-weight: 800; margin-bottom: 2px; }
+    .customizable-banner p { font-size: 12px; color: var(--slate-700); font-weight: 500; }
+    body.dark-mode .customizable-banner p { color: #cbd5e1; }
+    .custom-pills { display: flex; gap: 8px; flex-shrink: 0; }
+    .custom-pill {
+      background: var(--white); border: 1.5px solid #60a5fa; color: var(--navy-800);
+      padding: 6px 12px; border-radius: 7px; font-size: 11.5px; font-weight: 700;
+    }
+    body.dark-mode .custom-pill { background: #1e293b; border-color: #38bdf8; color: #e0f2fe; }
+
+    /* TAB 6: AI TEXT & VOICE HUB */
+    .ai-hub-grid {
+      flex: 1; display: grid; grid-template-columns: 1.28fr 1fr; gap: 16px; width: 100%;
+    }
+    .ai-panel {
+      background: var(--white); border: 1.5px solid var(--slate-200);
+      border-radius: 14px; padding: 14px 18px; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .ai-panel-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-bottom: 9px; border-bottom: 1.5px solid var(--slate-200);
+    }
+    body.dark-mode .ai-panel-head { border-bottom-color: #334155; }
+    .ai-panel-head h3 { font-size: 14.5px; font-weight: 800; }
+    .ai-badge-live {
+      background: #dcfce7; color: #15803d; font-size: 10.5px; font-weight: 800;
+      padding: 4px 10px; border-radius: 999px; border: 1px solid #86efac;
+    }
+    .ai-badge-voice {
+      background: #fef3c7; color: #92400e; font-size: 10.5px; font-weight: 800;
+      padding: 4px 10px; border-radius: 999px; border: 1px solid #fcd34d;
+    }
+
+    .chat-thread {
+      background: var(--slate-50); border: 1.5px solid var(--slate-200);
+      border-radius: 11px; padding: 11px 14px; display: flex; flex-direction: column; gap: 8px;
+      margin: 8px 0; height: 270px; overflow-y: auto;
+    }
+    body.dark-mode .chat-thread { background: #0f172a; border-color: #334155; }
+    .chat-bubble {
+      max-width: 86%; padding: 8px 12px; border-radius: 11px; font-size: 12px; line-height: 1.38; font-weight: 500;
+    }
+    .chat-bubble.security {
+      align-self: flex-end; background: var(--navy-800); color: var(--white); border-bottom-right-radius: 2px;
+    }
+    .chat-bubble.visitor {
+      align-self: flex-start; background: var(--white); color: var(--slate-900);
+      border: 1.5px solid var(--slate-200); border-bottom-left-radius: 2px;
+    }
+    body.dark-mode .chat-bubble.visitor { background: #1e293b; border-color: #475569; color: #f8fafc; }
+    .chat-meta { font-size: 10px; opacity: 0.82; margin-bottom: 2px; font-weight: 700; }
+
+    .compose-row { display: grid; grid-template-columns: 1fr 145px; gap: 9px; align-items: center; }
+    .send-sms-btn {
+      height: 36px; background: var(--green-600); color: var(--white);
+      border: none; border-radius: 8px; font-size: 12.5px; font-weight: 800; cursor: pointer;
+    }
+
+    .voice-agent-card {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border: 2px solid #f59e0b; border-radius: 11px; padding: 11px 14px; margin: 8px 0;
+    }
+    body.dark-mode .voice-agent-card { background: #1e1b18; border-color: #f59e0b; }
+    .voice-agent-card h4 { font-size: 12.5px; font-weight: 800; color: #78350f; margin-bottom: 5px; }
+    body.dark-mode .voice-agent-card h4 { color: #fcd34d; }
+    .voice-script-box {
+      background: var(--white); border: 1px dashed #d97706; border-radius: 8px;
+      padding: 8px 11px; font-size: 11.5px; line-height: 1.38; font-style: italic; font-weight: 600;
+    }
+    body.dark-mode .voice-script-box { background: #0f172a; color: #f8fafc; }
+
+    .voice-btn-stack { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .btn-voice-call {
+      background: var(--navy-800); color: var(--white); border: none; border-radius: 9px;
+      padding: 10px 14px; font-size: 12px; font-weight: 800; cursor: pointer;
+    }
+    .btn-voice-emergency {
+      background: #dc2626; color: var(--white); border: none; border-radius: 9px;
+      padding: 10px 14px; font-size: 12px; font-weight: 800; cursor: pointer;
+    }
+
+    /* Footer */
+    .slide-footer {
+      background: var(--white); border: 1.5px solid var(--slate-200);
+      border-radius: 10px; padding: 7px 16px; display: flex; justify-content: space-between;
+      align-items: center; font-size: 11.5px; color: var(--slate-600); font-weight: 600; flex-shrink: 0;
+    }
+    .slide-footer strong { color: var(--navy-900); }
+    body.dark-mode .slide-footer strong { color: #f8fafc; }
+
+    /* Modal Overlay */
+    .modal-backdrop {
+      position: absolute; inset: 0; background: rgba(15, 23, 42, 0.72);
+      display: none; align-items: center; justify-content: center; z-index: 60; padding: 30px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-window {
+      width: 680px; background: var(--white); color: var(--slate-900);
+      border-radius: 18px; border: 3px solid var(--gold-500);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45); overflow: hidden;
+    }
+    body.dark-mode .modal-window { background: #111827; color: #f8fafc; border-color: #38bdf8; }
+    .modal-top {
+      background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 100%);
+      color: var(--white); padding: 14px 22px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-top-title { font-size: 16px; font-weight: 800; }
+    .modal-close-x {
+      background: rgba(255, 255, 255, 0.18); color: var(--white);
+      padding: 4px 11px; border-radius: 6px; font-size: 12px; font-weight: 800; cursor: pointer; border: none;
+    }
+    .modal-content { padding: 22px 26px; }
+    .modal-section { margin-bottom: 14px; }
+    .modal-section h4 {
+      font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--navy-700); margin-bottom: 4px;
+    }
+    body.dark-mode .modal-section h4 { color: #38bdf8; }
+    .modal-section p { font-size: 13.5px; line-height: 1.5; color: var(--slate-700); font-weight: 500; }
+    body.dark-mode .modal-section p { color: #cbd5e1; }
+    .modal-why-box {
+      background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 11px; padding: 12px 16px; margin-bottom: 18px;
+    }
+    body.dark-mode .modal-why-box { background: #0f2942; border-color: #38bdf8; }
+    .modal-why-box h4 { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--green-600); margin-bottom: 4px; }
+    body.dark-mode .modal-why-box h4 { color: #4ade80; }
+    .modal-why-box p { font-size: 13px; line-height: 1.45; color: var(--slate-900); font-weight: 600; }
+    body.dark-mode .modal-why-box p { color: #f8fafc; }
+    .modal-back-btn {
+      background: var(--navy-800); color: var(--white); padding: 10px 20px;
+      border-radius: 9px; font-size: 13.5px; font-weight: 800; border: none; cursor: pointer;
+    }
+
+    /* Toast Notification */
+    .toast-banner {
+      position: absolute; bottom: 58px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #15803d; color: #ffffff; padding: 10px 22px; border-radius: 999px;
+      font-size: 13px; font-weight: 800; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+      opacity: 0; pointer-events: none; transition: all 0.25s ease; z-index: 70;
+    }
+    .toast-banner.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div>
+      <header class="slide-header">
+        <div class="brand-left">
+          <div class="seal-badge">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M9 12l2 2 4-4"/>
+            </svg>
+          </div>
+          <div class="brand-titles">
+            <h1>INDIANA VETERANS' HOME — VISITOR &amp; STAFF CHECK-IN</h1>
+            <div class="line-2">Sparks Digital LLC</div>
+            <div class="line-3">Brownsburg, IN</div>
+          </div>
+        </div>
+        <div class="header-controls">
+          <div class="demo-title-badge" id="active-demo-badge">(Tablet Demo)</div>
+          <div class="theme-toggle-switch" onclick="toggleTheme()" title="Switch between Light Mode and Dark Mode">
+            <span class="theme-opt active-light" id="opt-light">☀️ Light Mode</span>
+            <span class="theme-opt" id="opt-dark">🌙 Dark Mode</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="demo-nav-bar">
+        <div class="demo-tab active" id="tab-1" onclick="switchTab(1)">1. (Tablet Demo)</div>
+        <div class="demo-tab" id="tab-2" onclick="switchTab(2)">2. (PC App Demo)</div>
+        <div class="demo-tab" id="tab-3" onclick="switchTab(3)">3. (Web Browser Demo)</div>
+        <div class="demo-tab" id="tab-4" onclick="switchTab(4)">4. (Mobile App Demo)</div>
+        <div class="demo-tab" id="tab-5" onclick="switchTab(5)">5. (Live Roster Demo)</div>
+        <div class="demo-tab ai-tab" id="tab-6" onclick="switchTab(6)">6. (AI Text &amp; Voice Demo)</div>
+      </div>
+    </div>
+
+    <div class="workspace-area">
+      <!-- VIEW 1..4: MULTI-DEVICE CHECK-IN SCREEN -->
+      <div class="view-panel active" id="panel-checkin">
+        <div class="device-frame bezel-tablet" id="device-bezel">
+          <div class="app-screen">
+            <div id="device-topbar-container">
+              <div class="device-topbar">
+                <div><span class="status-dot"></span><strong>Indiana Veterans' Home</strong> — Lobby Tablet / Kiosk View</div>
+                <div>Live Interactive Preview</div>
+              </div>
+            </div>
+
+            <div class="app-body">
+              <div class="returning-search-section">
+                <div class="returning-search-label">
+                  <span>🔍 Returning Visitor / Staff Express Lookup</span>
+                  <span style="text-transform:none; font-weight:700;">Type to Filter or Click Button ➔</span>
+                </div>
+                <div class="returning-combobox-slot">
+                  <input type="text" id="returning-search-input" placeholder="Type Phone #, Name, or Resident to auto-fill..." oninput="filterReturningMenu(this.value)" onfocus="openReturningMenu()" />
+                  <button class="modern-dd-btn" id="dd-toggle-btn" onclick="toggleReturningMenu(event)">▾ Select Returning Visitor (5)</button>
+                </div>
+
+                <div class="modern-dd-menu" id="returning-dd-menu">
+                  <div class="modern-dd-head">
+                    <span>Returning Visitors &amp; Staff Directory (Click Any Row to Auto-Fill)</span>
+                    <span style="cursor:pointer; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:4px;" onclick="closeReturningMenu()">✕ Close</span>
+                  </div>
+                  <div class="modern-dd-row" onclick="selectReturningPerson(1, 'Jane Doe (Sample Visitor)', '(765) 555-0101 | jane.doe@example.com', 'Visiting: John Doe (Room 101)', 'MacArthur Hall')">
+                    <div class="modern-dd-left">
+                      <div class="modern-dd-avatar">JD</div>
+                      <div class="modern-dd-info">
+                        <strong>Jane Doe (Sample Visitor) • (765) 555-0101</strong>
+                        <span>Visiting: John Doe (Room 101) • MacArthur Hall • jane.doe@example.com</span>
+                      </div>
+                    </div>
+                    <div class="modern-dd-autofill">Family / Guest &rsaquo;</div>
+                  </div>
+                  <div class="modern-dd-row" onclick="selectReturningPerson(2, 'Sarah Jenkins, RN (Sample Nurse)', '(317) 555-0188 | sjenkins@example.com', '2nd Floor Nursing • RN #281940', 'Lincoln Hall')">
+                    <div class="modern-dd-left">
+                      <div class="modern-dd-avatar" style="background:#6b21a8;">SJ</div>
+                      <div class="modern-dd-info">
+                        <strong>Sarah Jenkins, RN (Sample Nurse) • (317) 555-0188</strong>
+                        <span>2nd Floor Nursing • RN #281940 • Lincoln Hall • sjenkins@example.com</span>
+                      </div>
+                    </div>
+                    <div class="modern-dd-autofill">Agency Nurse &rsaquo;</div>
+                  </div>
+                  <div class="modern-dd-row" onclick="selectReturningPerson(3, 'David Miller (Sample Flip Phone)', '(765) 555-0193 | Flip Phone Only', 'American Legion Post #11 • Recreation', 'Mitchell Hall')">
+                    <div class="modern-dd-left">
+                      <div class="modern-dd-avatar" style="background:#166534;">DM</div>
+                      <div class="modern-dd-info">
+                        <strong>David Miller (Sample Flip Phone) • (765) 555-0193</strong>
+                        <span>American Legion Post #11 • Mitchell Hall • Flip Phone Voice Alert Enabled</span>
+                      </div>
+                    </div>
+                    <div class="modern-dd-autofill">VSO Volunteer &rsaquo;</div>
+                  </div>
+                  <div class="modern-dd-row" onclick="selectReturningPerson(1, 'Mary Johnson (Sample Family)', '(765) 555-0142 | mjohnson@example.com', 'Visiting: Robert Johnson (Room 214)', 'MacArthur Hall')">
+                    <div class="modern-dd-left">
+                      <div class="modern-dd-avatar" style="background:#d97706;">MJ</div>
+                      <div class="modern-dd-info">
+                        <strong>Mary Johnson (Sample Family) • (765) 555-0142</strong>
+                        <span>Visiting: Robert Johnson (Room 214) • MacArthur Hall</span>
+                      </div>
+                    </div>
+                    <div class="modern-dd-autofill">Family / Guest &rsaquo;</div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="step-label">
+                  <span>Step 1: Select Category (Click Any Button Below)</span>
+                  <span class="click-hint">✓ Live Interactive Category Tabs</span>
+                </div>
+                <div class="big-role-grid">
+                  <div class="big-role-btn active" id="cat-btn-1" onclick="selectCategory(1)">
+                    <div class="role-icon-circle">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div class="role-text">
+                      <strong>Family or Guest</strong>
+                      <span>Visiting a Resident</span>
+                    </div>
+                  </div>
+
+                  <div class="big-role-btn" id="cat-btn-2" onclick="selectCategory(2)">
+                    <div class="role-icon-circle">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M15 8h2"/><path d="M15 12h2"/><path d="M7 16h10"/></svg>
+                    </div>
+                    <div class="role-text">
+                      <strong>Staff &amp; Nurses</strong>
+                      <span>IVH &amp; Agency Care</span>
+                    </div>
+                  </div>
+
+                  <div class="big-role-btn" id="cat-btn-3" onclick="selectCategory(3)">
+                    <div class="role-icon-circle">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                    <div class="role-text">
+                      <strong>Volunteer / Vendor</strong>
+                      <span>VSO, Guest, or Service</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="step-label">
+                  <span>Step 2: Visitor / Staff Details (Edit Any Field — Updates Sticker Badge Live!)</span>
+                  <span class="click-hint">✓ Live Real-Time Sync</span>
+                </div>
+                <div class="simple-form-grid">
+                  <div class="field-box">
+                    <label>First &amp; Last Name (Editable Sample)</label>
+                    <input type="text" class="field-input" id="inp-name" value="Jane Doe (Sample Visitor)" oninput="syncBadgePreview()" />
+                  </div>
+                  <div class="field-box">
+                    <label>Phone Number or Email (Editable Sample)</label>
+                    <input type="text" class="field-input" id="inp-phone" value="(765) 555-0101 | jane.doe@example.com" oninput="syncBadgePreview()" />
+                  </div>
+                  <div class="field-box">
+                    <label id="lbl-visit">Resident Being Visited &amp; Room # (Sample)</label>
+                    <input type="text" class="field-input" id="inp-visit" value="Visiting: John Doe (Room 101)" oninput="syncBadgePreview()" />
+                  </div>
+                  <div class="field-box">
+                    <label>Campus Building / Hall (Click to Change)</label>
+                    <select class="field-input" id="inp-hall" onchange="syncBadgePreview()">
+                      <option value="MacArthur Hall">MacArthur Hall</option>
+                      <option value="Lincoln Hall">Lincoln Hall</option>
+                      <option value="Mitchell Hall">Mitchell Hall</option>
+                      <option value="Ernie Pyle Hall">Ernie Pyle Hall</option>
+                      <option value="Dewey Administration">Dewey Administration</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="action-btn-row">
+                  <button class="giant-print-btn" onclick="signInAndAddToRoster()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Click to Sign In &amp; View on Live Roster ➔
+                  </button>
+                  <button class="quick-signout-big-btn" onclick="openFeatureModal('signout')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    1-Click Sign Out
+                  </button>
+                </div>
+                <div class="kiosk-helper-strip">
+                  <span><strong>Try It Live:</strong> Type in any field above and watch the <strong>Sticker Badge</strong> on the right update in real time!</span>
+                  <span><strong>Click Tab 6 Above</strong> for AI 2-Way Text &amp; Voice Demo!</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="right-column">
+          <div class="side-card" onclick="openFeatureModal('qr')">
+            <div class="side-card-title">
+              <span>Printable Lobby QR Check-In</span>
+              <span class="tag">ⓘ Feature Info &rsaquo;</span>
+            </div>
+            <div class="qr-poster-box">
+              <div class="qr-code-frame">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="#0f172a">
+                  <path d="M3 3h7v7H3V3zm2 2v3h3V5H5zm9-2h7v7h-7V3zm2 2v3h3V5h-3zM3 14h7v7H3v-7zm2 2v3h3v-3H5zm13-2h3v2h-3v-2zm-4 0h2v3h-2v-3zm2 3h2v2h-2v-2zm-2 2h2v2h-2v-2zm4 0h3v2h-3v-2zm0-2h1v1h-1v-1z"/>
+                </svg>
+              </div>
+              <div class="qr-poster-text">
+                <h4>Scan to Sign In or Out Instantly</h4>
+                <p>Print on a lobby sign or display on a screen — visitors &amp; staff can scan with their phone camera to sign in or out in 3 seconds.</p>
+                <span class="qr-sub-pill">Click to Preview QR Poster &rsaquo;</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-card" onclick="openFeatureModal('signout')">
+            <div class="side-card-title">
+              <span>Automatic Printed Sticker Badge (Live Sync)</span>
+              <span class="tag">ⓘ Feature Info &rsaquo;</span>
+            </div>
+            <div class="sticker-badge">
+              <div class="sticker-top">
+                <strong>INDIANA VETERANS' HOME</strong>
+                <span>PASS #IVH-408</span>
+              </div>
+              <div class="sticker-body">
+                <div>
+                  <div class="sticker-role" id="badge-role-text">FAMILY &amp; GUEST VISITOR</div>
+                  <div class="sticker-name" id="badge-name-text">Jane Doe (Sample Visitor)</div>
+                  <div class="sticker-details">
+                    <div><strong>Building:</strong> <span id="badge-hall-text">MacArthur Hall</span></div>
+                    <div><strong>Detail:</strong> <span id="badge-visit-text">Visiting: John Doe (Room 101)</span></div>
+                    <div><strong>Contact:</strong> <span id="badge-phone-text">(765) 555-0101</span></div>
+                  </div>
+                </div>
+                <div class="sticker-qr-mini">
+                  <svg width="38" height="38" viewBox="0 0 24 24" fill="#0f172a">
+                    <path d="M3 3h7v7H3V3zm2 2v3h3V5H5zm9-2h7v7h-7V3zm2 2v3h3V5h-3zM3 14h7v7H3v-7zm2 2v3h3v-3H5zm9 0h3v3h-3v-3zm4 4h3v3h-3v-3zm0-4h3v2h-3v-2zm-4 4h2v3h-2v-3z"/>
+                  </svg>
+                  <span>SCAN TO SIGN OUT</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-card" style="flex: 1; display: flex; flex-direction: column; justify-content: center;" onclick="openFeatureModal('custom')">
+            <div class="side-card-title">
+              <span id="highlights-title">Customizations &amp; Security</span>
+              <span class="tag">ⓘ Feature Info &rsaquo;</span>
+            </div>
+            <ul class="benefit-list" id="highlights-list">
+              <li><div class="check-circle">✓</div><div><strong>Tailored Procedures &amp; Security:</strong> Customizations are available for specific check-in/out procedures &amp; security protocols.</div></li>
+              <li><div class="check-circle">✓</div><div><strong>2-Way Text &amp; AI Voice Ready:</strong> Reach any signed-in visitor by text or flip-phone voice call (see Tab 6).</div></li>
+              <li><div class="check-circle">✓</div><div><strong>Custom Features Built to Order:</strong> If there's a feature you would like it to have, we can make that happen!</div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 5: LIVE CAMPUS ROSTER -->
+      <div class="view-panel" id="panel-roster">
+        <div class="roster-full-body">
+          <div class="roster-card">
+            <div class="dash-top-row">
+              <div class="summary-cards">
+                <div class="stat-pill-card">
+                  <div class="stat-num" id="stat-total">42</div>
+                  <div class="stat-label">Total Signed<br/>In Now</div>
+                </div>
+                <div class="stat-pill-card">
+                  <div class="stat-num" id="stat-family">15</div>
+                  <div class="stat-label">Family &amp;<br/>Guests</div>
+                </div>
+                <div class="stat-pill-card">
+                  <div class="stat-num">24</div>
+                  <div class="stat-label">IVH Staff &amp;<br/>Agency Nurses</div>
+                </div>
+                <div class="stat-pill-card">
+                  <div class="stat-num">3</div>
+                  <div class="stat-label">Volunteers &amp;<br/>Vendors</div>
+                </div>
+              </div>
+
+              <div class="dash-action-buttons">
+                <button class="btn-outline" onclick="switchTab(1)">+ Sign Person In</button>
+                <button class="btn-ai-gold" onclick="switchTab(6)">💬 2-Way Text / AI Call</button>
+                <button class="btn-outline" onclick="openFeatureModal('qr')">Print QR Poster</button>
+                <button class="btn-outline" onclick="exportSampleCSV()">Export Log (CSV)</button>
+                <button class="btn-emergency" onclick="openFeatureModal('emergency')">🚨 Emergency Roll Call</button>
+              </div>
+            </div>
+
+            <table class="clean-table">
+              <thead>
+                <tr>
+                  <th style="width: 22%;">Visitor / Staff Name</th>
+                  <th style="width: 14%;">Category</th>
+                  <th style="width: 15%;">Building / Hall</th>
+                  <th style="width: 22%;">Visiting / Assignment</th>
+                  <th style="width: 13%;">Contact / Mode</th>
+                  <th style="width: 14%;">Quick Actions</th>
+                </tr>
+              </thead>
+              <tbody id="roster-tbody">
+                <tr class="live-test-row">
+                  <td id="r-name">Jane Doe (Sample Visitor)</td>
+                  <td><span class="role-badge role-family" id="r-cat">Family / Guest (Live)</span></td>
+                  <td id="r-hall">MacArthur Hall</td>
+                  <td id="r-visit">Visiting: John Doe (Room 101)</td>
+                  <td id="r-phone">(765) 555-0101</td>
+                  <td>
+                    <div class="roster-action-group">
+                      <button class="msg-call-btn" onclick="openPersonComms(document.getElementById('r-name').innerText, document.getElementById('r-phone').innerText)">💬 Text/Call</button>
+                      <button class="signout-btn" onclick="signOutRosterRow(this)">Sign Out</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Mary Johnson (Sample Family)</td>
+                  <td><span class="role-badge role-family">Family / Guest</span></td>
+                  <td>MacArthur Hall</td>
+                  <td>Visiting: Robert Johnson (Rm 214)</td>
+                  <td>(765) 555-0142</td>
+                  <td>
+                    <div class="roster-action-group">
+                      <button class="msg-call-btn" onclick="openPersonComms('Mary Johnson (Sample Family)', '(765) 555-0142')">💬 Text/Call</button>
+                      <button class="signout-btn" onclick="signOutRosterRow(this)">Sign Out</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Sarah Jenkins, RN (Sample Nurse)</td>
+                  <td><span class="role-badge role-nurse">Agency Nurse</span></td>
+                  <td>Lincoln Hall</td>
+                  <td>2nd Floor Nursing Station</td>
+                  <td>(317) 555-0188</td>
+                  <td>
+                    <div class="roster-action-group">
+                      <button class="msg-call-btn" onclick="openPersonComms('Sarah Jenkins, RN (Sample Nurse)', '(317) 555-0188')">💬 Text/Call</button>
+                      <button class="signout-btn" onclick="signOutRosterRow(this)">Sign Out</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>David Miller (Sample Flip Phone)</td>
+                  <td><span class="role-badge role-staff">VSO Volunteer</span></td>
+                  <td>Mitchell Hall</td>
+                  <td>American Legion Post #11 Visit</td>
+                  <td>(765) 555-0193</td>
+                  <td>
+                    <div class="roster-action-group">
+                      <button class="msg-call-btn" onclick="openPersonComms('David Miller (Sample Flip Phone)', '(765) 555-0193')">📞 AI Call</button>
+                      <button class="signout-btn" onclick="signOutRosterRow(this)">Sign Out</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Mike Torres (Sample Vendor)</td>
+                  <td><span class="role-badge role-vendor">Vendor / Service</span></td>
+                  <td>Ernie Pyle Hall</td>
+                  <td>HVAC Service — Escorted by J. Doe</td>
+                  <td>(317) 555-0177</td>
+                  <td>
+                    <div class="roster-action-group">
+                      <button class="msg-call-btn" onclick="openPersonComms('Mike Torres (Sample Vendor)', '(317) 555-0177')">💬 Text/Call</button>
+                      <button class="signout-btn" onclick="signOutRosterRow(this)">Sign Out</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="customizable-banner" onclick="openFeatureModal('custom')">
+            <div>
+              <h3>Customizations, Security Protocols &amp; 2-Way Visitor Communication</h3>
+              <p><strong>Customizations are available, including specific check in/check out procedures, security protocols, and if there's a feature you would like it to have, we can make that happen.</strong></p>
+            </div>
+            <div class="custom-pills">
+              <div class="custom-pill">Custom Procedures</div>
+              <div class="custom-pill">Security Protocols</div>
+              <div class="custom-pill">2-Way Text &amp; AI Voice</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 6: AI 2-WAY TEXT & VOICE RECEPTIONIST HUB -->
+      <div class="view-panel" id="panel-ai">
+        <div class="ai-hub-grid">
+          <div class="ai-panel">
+            <div>
+              <div class="ai-panel-head">
+                <h3>💬 2-Way Visitor &amp; Staff Text / Chat Console (Reception &amp; Security Desk)</h3>
+                <span class="ai-badge-live">● Live 2-Way SMS Sync</span>
+              </div>
+
+              <div style="margin-top: 8px; font-size: 11.5px; font-weight: 700;" id="chat-selected-person">
+                Selected Checked-In Person: Jane Doe (Sample Visitor) • MacArthur Hall (Rm 101) • (765) 555-0101
+              </div>
+
+              <div class="chat-thread" id="chat-thread-box">
+                <div class="chat-bubble security">
+                  <div class="chat-meta">IVH Front Desk / Security • 10:42 AM (Sent via SMS &amp; Web Pass)</div>
+                  Hi Jane, this is the Main Lobby Desk at the Indiana Veterans' Home. You left your keyring at the check-in counter — we have it safe for you at the front desk whenever you're ready!
+                </div>
+                <div class="chat-bubble visitor">
+                  <div class="chat-meta">Jane Doe (Visitor Reply from Cell Phone) • 10:43 AM</div>
+                  Oh thank goodness! Thank you so much for texting me. I'm up in Room 101 visiting my dad right now, I'll swing by the desk in 5 minutes to grab them.
+                </div>
+                <div class="chat-bubble security">
+                  <div class="chat-meta">IVH Front Desk / Security • 10:44 AM</div>
+                  No rush at all! Take your time visiting your dad, we'll hold them right here for you.
+                </div>
+              </div>
+
+              <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 7px 11px; font-size: 11px; color: #1e3a8a; font-weight: 600;">
+                💡 <strong>Try It Live Below:</strong> Type a message and click <strong>"Send 2-Way Text ➔"</strong> to see a live simulated visitor reply!
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                <span>✍️ Type a Sample Text Message Below:</span>
+                <span style="color: var(--green-600);">2-Way SMS &amp; Chat Ready</span>
+              </div>
+              <div class="compose-row">
+                <input type="text" class="field-input" id="sms-compose-input" value="Hi Jane, yes the main dining room is open for family guests at noon today!" onkeydown="if(event.key==='Enter') sendLiveSMS()" />
+                <button class="send-sms-btn" onclick="sendLiveSMS()">Send 2-Way Text ➔</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-panel">
+            <div>
+              <div class="ai-panel-head">
+                <h3>📞 AI Phone Receptionist &amp; Flip-Phone Voice Agent</h3>
+                <span class="ai-badge-voice">Inbound &amp; Outbound AI</span>
+              </div>
+
+              <p style="font-size: 11.5px; margin-top: 6px; line-height: 1.38; font-weight: 500;">
+                <strong>Works with Every Phone (Including Flip Phones) + Optional 24/7 AI Receptionist:</strong> Reach any visitor on campus by automated voice call, or let our AI Receptionist answer incoming front-desk calls automatically:
+              </p>
+
+              <div class="voice-agent-card">
+                <h4>🔊 Sample Outbound Flip-Phone Call &amp; Inbound AI Receptionist Script:</h4>
+                <div class="voice-script-box" id="voice-script-text">
+                  "Hello David, this is an automated courtesy call from the Indiana Veterans' Home front desk. Security asked us to let you know that your headlights were left on in the MacArthur Hall parking lot. Press 1 on your keypad to confirm, or press 2 to speak directly with the front desk."
+                </div>
+              </div>
+
+              <ul class="benefit-list" style="margin-top: 6px;">
+                <li>
+                  <div class="check-circle">✓</div>
+                  <div><strong>Optional 24/7 AI Phone Receptionist:</strong> Answers incoming lobby phone calls when staff are busy, pre-registers visitors over the phone, answers visiting-hour FAQs, and transfers urgent calls to nursing units.</div>
+                </li>
+                <li>
+                  <div class="check-circle">✓</div>
+                  <div><strong>Flip-Phone Keypad Confirmation (Press 1 / Press 2):</strong> Visitors without smartphones receive automated voice alerts and press 1 to confirm or 2 to talk to security.</div>
+                </li>
+                <li>
+                  <div class="check-circle">✓</div>
+                  <div><strong>1-Click Campus Emergency Broadcast:</strong> Instantly send a simultaneous text AND automated voice call to all signed-in visitors and staff during a weather or safety alert.</div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="voice-btn-stack">
+              <button class="btn-voice-call" onclick="playVoiceSample()">🔊 Click to Hear Live AI Voice Call Sample (Audio Preview)</button>
+              <button class="btn-voice-emergency" onclick="openFeatureModal('ai')">🚨 View 24/7 AI Receptionist &amp; Emergency Broadcast Overview</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="slide-footer">
+      <div><strong>Sparks Digital LLC</strong> • Brownsburg, Indiana • Garrett Sparks • (317) 832-4840 • digisparks.net</div>
+      <div>Single-Screen Interactive Demo: <strong>Click any device tab, category, returning visitor, or test 2-Way SMS &amp; Voice Audio!</strong></div>
+    </footer>
+
+    <!-- Interactive Feature Modal -->
+    <div class="modal-backdrop" id="feature-modal" onclick="if(event.target===this) closeFeatureModal()">
+      <div class="modal-window">
+        <div class="modal-top">
+          <div class="modal-top-title" id="modal-title">✨ Interactive Feature Preview</div>
+          <button class="modal-close-x" onclick="closeFeatureModal()">✕ Close</button>
+        </div>
+        <div class="modal-content">
+          <div class="modal-section">
+            <h4>What This Feature Does in the Live System</h4>
+            <p id="modal-what"></p>
+          </div>
+          <div class="modal-why-box">
+            <h4>Why It Is Included for the Indiana Veterans' Home</h4>
+            <p id="modal-why"></p>
+          </div>
+          <div style="display:flex; justify-content:flex-end;">
+            <button class="modal-back-btn" onclick="closeFeatureModal()">✓ Got It — Return to Interactive Demo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-banner" id="toast-banner">✓ Signed In &amp; Synced to Live Roster!</div>
+  </div>
+
+  <script>
+    const MODAL_DATA = {
+      qr: {
+        title: "Printable Lobby QR Code Poster",
+        what: "Generates a ready-to-print 8.5\" x 11\" lobby poster (or digital display graphic) with a secure QR code for any entrance at the Indiana Veterans' Home. Visitors and staff simply point their smartphone camera at the poster to open the check-in form on their own phone.",
+        why: "Eliminates lobby lines during peak visiting hours or shift changes, and automatically remembers returning visitors on their phone so repeat check-ins take just one tap!"
+      },
+      signout: {
+        title: "Instant 1-Click Sign-Out & Thermal Sticker Badge",
+        what: "When a visitor or staff member checks in, the system prints a high-contrast adhesive visitor badge in 1 second. When leaving, they can either click '1-Click Sign Out', scan the mini QR code printed on their badge, or be signed out by reception on the Live Roster.",
+        why: "Keeps your live campus roster 100% accurate so old badges don't stay 'signed in' overnight, while making sign-out effortless and fast."
+      },
+      custom: {
+        title: "Tailored Check-In Procedures, Security Protocols & Custom Features",
+        what: "Customizations are available, including specific check in/check out procedures, security protocols, and if there's a feature you would like it to have, we can make that happen. Every screen, question, badge template, and report is built and supported locally in Brownsburg, Indiana by Sparks Digital LLC.",
+        why: "You are never locked into a rigid off-the-shelf template. Whether you need custom visitor screening questions, specific nursing or vendor sign-in rules, or 2-way text and flip-phone voice alerts, we build it directly around the Indiana Veterans' Home's workflow."
+      },
+      emergency: {
+        title: "1-Click Emergency Evacuation Roll Call List",
+        what: "Immediately prints or displays a live, building-by-building emergency accountability checklist (MacArthur Hall, Lincoln Hall, Mitchell Hall, Ernie Pyle Hall, Dewey Admin) showing every person currently signed in on campus.",
+        why: "During a fire drill or real life-safety emergency, staff can grab a tablet, laptop, or printed sheet and verify everyone is accounted for in seconds."
+      },
+      ai: {
+        title: "2-Way SMS Texting, Flip-Phone Voice Calls & 24/7 AI Receptionist",
+        what: "Allows security or reception staff to click any checked-in person's name to send an instant 2-way text message OR trigger an automated AI voice phone call for visitors with flip phones. Can also be paired with our optional 24/7 Inbound AI Phone Receptionist to answer front-desk calls, pre-register guests, and route calls to nursing units.",
+        why: "Ensures 100% of visitors and staff on the 250-acre campus can be reached immediately (even on a flip phone), while taking incoming phone call pressure off busy front-desk and nursing staff!"
+      }
+    };
+
+    let currentCat = 1;
+    let totalSignedIn = 42;
+    let familySignedIn = 15;
+
+    function showToast(msg) {
+      const t = document.getElementById('toast-banner');
+      t.innerText = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('dark-mode');
+      document.getElementById('opt-light').className = isDark ? 'theme-opt' : 'theme-opt active-light';
+      document.getElementById('opt-dark').className = isDark ? 'theme-opt active-dark' : 'theme-opt';
+    }
+
+    function switchTab(tabId) {
+      for (let i = 1; i <= 6; i++) {
+        const el = document.getElementById('tab-' + i);
+        el.classList.toggle('active', i === tabId);
+      }
+
+      const badges = {
+        1: '(Tablet Demo)',
+        2: '(PC App Demo)',
+        3: '(Web Browser Demo)',
+        4: '(Mobile App Demo)',
+        5: '(Live Roster Demo)',
+        6: '(AI Text & Voice Demo)'
+      };
+      document.getElementById('active-demo-badge').innerText = badges[tabId];
+
+      document.getElementById('panel-checkin').classList.toggle('active', tabId <= 4);
+      document.getElementById('panel-roster').classList.toggle('active', tabId === 5);
+      document.getElementById('panel-ai').classList.toggle('active', tabId === 6);
+
+      if (tabId <= 4) {
+        const bezel = document.getElementById('device-bezel');
+        const topbar = document.getElementById('device-topbar-container');
+        if (tabId === 1) {
+          bezel.className = 'device-frame bezel-tablet';
+          topbar.innerHTML = '<div class="device-topbar"><div><span class="status-dot"></span><strong>Indiana Veterans\' Home</strong> — Lobby Tablet / Kiosk View</div><div>Touchscreen Kiosk Mode</div></div>';
+        } else if (tabId === 2) {
+          bezel.className = 'device-frame bezel-pc';
+          topbar.innerHTML = '<div class="device-topbar" style="background:#1e293b; border-bottom:2px solid #d99b26;"><div>💻 <strong>IVH Reception &amp; Multi-Laptop Desktop Application</strong> (Windows / Mac Laptop #1)</div><div style="font-family:monospace;">— &nbsp; ▢ &nbsp; ✕</div></div>';
+        } else if (tabId === 3) {
+          bezel.className = 'device-frame bezel-browser';
+          topbar.innerHTML = '<div class="browser-bar"><div class="browser-dots"><span style="background:#ef4444;"></span><span style="background:#f59e0b;"></span><span style="background:#10b981;"></span></div><div class="browser-url">🔒 https://checkin.ivh.in.gov/web-portal — Works in Any Browser (Chrome, Edge, Safari)</div></div>';
+        } else if (tabId === 4) {
+          bezel.className = 'device-frame bezel-mobile';
+          topbar.innerHTML = '<div class="device-topbar"><div>📱 <strong>IVH Mobile &amp; QR Scan Express App</strong> (iOS &amp; Android Smartphone View)</div><div>5G • 100% 🔋</div></div>';
+        }
+      }
+    }
+
+    function selectCategory(catId, skipDefaults) {
+      currentCat = catId;
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById('cat-btn-' + i).classList.toggle('active', i === catId);
+      }
+      const meta = {
+        1: {
+          role: 'FAMILY & GUEST VISITOR',
+          lbl: 'Resident Being Visited & Room # (Sample)',
+          name: 'Jane Doe (Sample Visitor)',
+          phone: '(765) 555-0101 | jane.doe@example.com',
+          visit: 'Visiting: John Doe (Room 101)',
+          hall: 'MacArthur Hall'
+        },
+        2: {
+          role: 'IVH STAFF & AGENCY NURSING',
+          lbl: 'Department / Unit / License # (Sample)',
+          name: 'Sarah Jenkins, RN (Sample Nurse)',
+          phone: '(317) 555-0188 | sjenkins@example.com',
+          visit: '2nd Floor Nursing • RN #281940',
+          hall: 'Lincoln Hall'
+        },
+        3: {
+          role: 'VSO VOLUNTEER / VENDOR',
+          lbl: 'Organization / Work Order / Escort (Sample)',
+          name: 'David Miller (Sample Flip Phone)',
+          phone: '(765) 555-0193 | Flip Phone Only',
+          visit: 'American Legion Post #11 • Recreation',
+          hall: 'Mitchell Hall'
+        }
+      }[catId];
+
+      document.getElementById('lbl-visit').innerText = meta.lbl;
+      document.getElementById('badge-role-text').innerText = meta.role;
+
+      if (!skipDefaults) {
+        document.getElementById('inp-name').value = meta.name;
+        document.getElementById('inp-phone').value = meta.phone;
+        document.getElementById('inp-visit').value = meta.visit;
+        document.getElementById('inp-hall').value = meta.hall;
+      }
+      syncBadgePreview();
+    }
+
+    function syncBadgePreview() {
+      const name = document.getElementById('inp-name').value || 'Visitor Name';
+      const phone = document.getElementById('inp-phone').value || '(765) 555-0100';
+      const visit = document.getElementById('inp-visit').value || 'Main Campus';
+      const hall = document.getElementById('inp-hall').value || 'MacArthur Hall';
+
+      document.getElementById('badge-name-text').innerText = name;
+      document.getElementById('badge-hall-text').innerText = hall;
+      document.getElementById('badge-visit-text').innerText = visit;
+      document.getElementById('badge-phone-text').innerText = phone.split('|')[0].trim();
+
+      document.getElementById('r-name').innerText = name;
+      document.getElementById('r-hall').innerText = hall;
+      document.getElementById('r-visit').innerText = visit;
+      document.getElementById('r-phone').innerText = phone.split('|')[0].trim();
+    }
+
+    function toggleReturningMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('returning-dd-menu');
+      menu.classList.toggle('open');
+    }
+    function openReturningMenu() {
+      document.getElementById('returning-dd-menu').classList.add('open');
+    }
+    function closeReturningMenu() {
+      document.getElementById('returning-dd-menu').classList.remove('open');
+    }
+    function filterReturningMenu(q) {
+      openReturningMenu();
+      const rows = document.querySelectorAll('#returning-dd-menu .modern-dd-row');
+      const lower = q.toLowerCase();
+      rows.forEach(r => {
+        r.style.display = r.innerText.toLowerCase().includes(lower) ? 'flex' : 'none';
+      });
+    }
+
+    function selectReturningPerson(catId, name, phone, visit, hall) {
+      selectCategory(catId, true);
+      document.getElementById('inp-name').value = name;
+      document.getElementById('inp-phone').value = phone;
+      document.getElementById('inp-visit').value = visit;
+      document.getElementById('inp-hall').value = hall;
+      document.getElementById('returning-search-input').value = name + ' — Auto-Filled';
+      closeReturningMenu();
+      syncBadgePreview();
+      showToast('✓ Auto-filled returning profile for ' + name + '!');
+    }
+
+    function signInAndAddToRoster() {
+      syncBadgePreview();
+      totalSignedIn++;
+      familySignedIn++;
+      document.getElementById('stat-total').innerText = totalSignedIn;
+      document.getElementById('stat-family').innerText = familySignedIn;
+      const name = document.getElementById('inp-name').value;
+      showToast('🖨️ Printed Sticker Badge & Signed In: ' + name + '!');
+      switchTab(5);
+    }
+
+    function signOutRosterRow(btn) {
+      const row = btn.closest('tr');
+      btn.innerText = '✓ Signed Out';
+      btn.disabled = true;
+      row.style.opacity = '0.55';
+      if (totalSignedIn > 0) totalSignedIn--;
+      document.getElementById('stat-total').innerText = totalSignedIn;
+      showToast('✓ Visitor signed out and campus roster updated!');
+    }
+
+    function openPersonComms(name, phone) {
+      document.getElementById('chat-selected-person').innerText = 'Selected Checked-In Person: ' + name + ' • ' + phone;
+      document.getElementById('sms-compose-input').value = 'Hi ' + name.split(' ')[0] + ', please let the front desk know if you need any assistance during your visit!';
+      switchTab(6);
+      showToast('💬 Loaded 2-Way Text & Voice Console for ' + name);
+    }
+
+    function sendLiveSMS() {
+      const inp = document.getElementById('sms-compose-input');
+      const text = inp.value.trim();
+      if (!text) return;
+      const box = document.getElementById('chat-thread-box');
+      const b1 = document.createElement('div');
+      b1.className = 'chat-bubble security';
+      b1.innerHTML = '<div class="chat-meta">IVH Front Desk / Security • Just Now</div>' + text;
+      box.appendChild(b1);
+      inp.value = '';
+      box.scrollTop = box.scrollHeight;
+
+      setTimeout(() => {
+        const b2 = document.createElement('div');
+        b2.className = 'chat-bubble visitor';
+        b2.innerHTML = '<div class="chat-meta">Visitor Reply from Cell Phone • Just Now</div>Got it, thank you so much for the quick text from the front desk!';
+        box.appendChild(b2);
+        box.scrollTop = box.scrollHeight;
+        showToast('💬 New 2-Way SMS reply received from visitor!');
+      }, 1100);
+    }
+
+    function playVoiceSample() {
+      const msg = "Hello David, this is an automated courtesy call from the Indiana Veterans Home front desk. Security asked us to let you know that your headlights were left on in the MacArthur Hall parking lot. Press 1 on your keypad to confirm, or press 2 to speak directly with the front desk.";
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(msg);
+        u.rate = 1.0;
+        window.speechSynthesis.speak(u);
+        showToast('🔊 Playing live AI Voice Agent sample call through your speakers...');
+      } else {
+        openFeatureModal('ai');
+      }
+    }
+
+    function exportSampleCSV() {
+      const csv = "Name,Category,Building,Visiting_Assignment,Contact,Status\n" +
+        `"${document.getElementById('r-name').innerText}",Family / Guest,"${document.getElementById('r-hall').innerText}","${document.getElementById('r-visit').innerText}","${document.getElementById('r-phone').innerText}",Signed In\n` +
+        "Mary Johnson,Family / Guest,MacArthur Hall,Visiting: Robert Johnson (Rm 214),(765) 555-0142,Signed In\n" +
+        "Sarah Jenkins RN,Agency Nurse,Lincoln Hall,2nd Floor Nursing Station,(317) 555-0188,Signed In\n" +
+        "David Miller,VSO Volunteer,Mitchell Hall,American Legion Post #11,(765) 555-0193,Signed In\n";
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'IVH_Daily_CheckIn_Roster_Sample.csv';
+      a.click();
+      showToast('📊 Exported sample IVH Daily Roster (.csv)!');
+    }
+
+    function openFeatureModal(key) {
+      const d = MODAL_DATA[key] || MODAL_DATA.custom;
+      document.getElementById('modal-title').innerText = '✨ Interactive Feature Preview: ' + d.title;
+      document.getElementById('modal-what').innerText = d.what;
+      document.getElementById('modal-why').innerText = d.why;
+      document.getElementById('feature-modal').classList.add('open');
+    }
+
+    function closeFeatureModal() {
+      document.getElementById('feature-modal').classList.remove('open');
+    }
+  </script>
+</body>
+</html>
